@@ -1,4 +1,4 @@
-# JavaFX Quiz Game (End Assignment)
+# JavaFX Quiz Game 
 
 This is a JavaFX Quiz Game implementing **Factory**, **Singleton**, **Observer (via JavaFX bindings)**, and **MVC** patterns.
 
