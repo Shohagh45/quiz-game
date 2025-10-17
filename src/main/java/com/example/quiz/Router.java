@@ -1,8 +1,8 @@
 package com.example.quiz;
 
-import com.example.quiz.ui.GameView;
-import com.example.quiz.ui.MenuView;
-import com.example.quiz.ui.ResultsView;
+import com.example.quiz.view.GameView;
+import com.example.quiz.view.MenuView;
+import com.example.quiz.view.ResultsView;
 import javafx.stage.Stage;
 
 public class Router {

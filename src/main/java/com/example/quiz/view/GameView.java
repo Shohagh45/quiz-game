@@ -1,4 +1,4 @@
-package com.example.quiz.ui;
+package com.example.quiz.view;
 
 import com.example.quiz.Router;
 import com.example.quiz.state.GameManager;
