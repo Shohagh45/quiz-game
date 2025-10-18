@@ -1,4 +1,4 @@
-package com.example.quiz.ui;
+package com.example.quiz.view;
 
 import com.example.quiz.Router;
 import com.example.quiz.state.GameManager;
@@ -14,6 +14,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.scene.control.ProgressIndicator;
 
 public class GameView {
     private final Router router;
@@ -172,7 +173,7 @@ public class GameView {
             timer.playFromStart();
         } else {
             timeLabel.setText("--");
-            timeBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+            timeBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         }
     }
 
