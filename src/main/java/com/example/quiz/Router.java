@@ -1,7 +1,8 @@
 package com.example.quiz;
 
-import com.example.quiz.view.GameView;
+import com.example.quiz.controller.MenuController;
 import com.example.quiz.view.MenuView;
+import com.example.quiz.view.GameView;
 import com.example.quiz.view.ResultsView;
 import javafx.stage.Stage;
 
@@ -14,17 +15,20 @@ public class Router {
     }
 
     public void showMenu() {
-        stage.setScene(new MenuView(this).getScene());
+        MenuView view = new MenuView();
+        stage.setScene(view.getScene());
         stage.show();
     }
 
     public void showGame() {
-        stage.setScene(new GameView(this).getScene());
+        GameView view = new GameView(this);
+        stage.setScene(view.getScene());
         stage.show();
     }
 
     public void showResults() {
-        stage.setScene(new ResultsView(this).getScene());
+        ResultsView view = new ResultsView(this);
+        stage.setScene(view.getScene());
         stage.show();
     }
 }
