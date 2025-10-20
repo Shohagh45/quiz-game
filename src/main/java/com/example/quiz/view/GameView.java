@@ -17,6 +17,8 @@ import javafx.util.Duration;
 import javafx.scene.control.ProgressIndicator;
 
 public class GameView {
+    private final TextField nameField = new TextField();
+    private final Label questionText = new Label("Enter your name to begin.");
     private final Router router;
     private final Scene scene;
 
@@ -24,6 +26,7 @@ public class GameView {
     private int remaining;
 
     public GameView(Router router) {
+
         this.router = router;
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(16));
@@ -31,9 +34,7 @@ public class GameView {
         Label header = new Label("Quiz In Progress");
         header.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
-        // Top bar: Player, Score, Progress
-        TextField nameField = new TextField();
-        nameField.setPromptText("Enter your name and press Enter");
+
         Label scoreLabel = new Label();
         ProgressBar timeBar = new ProgressBar(1.0);
         Label timeLabel = new Label("--s");
@@ -74,15 +75,7 @@ public class GameView {
         bottom.setPadding(new Insets(10));
         root.setBottom(bottom);
 
-        nameField.setOnAction(e -> {
-            String name = nameField.getText() == null ? "" : nameField.getText().trim();
-            if (name.isEmpty()) {
-                alert("Validation", "Please enter your name to start.");
-                return;
-            }
-            GameManager.getInstance().playerNameProperty().set(name);
-            nextQuestion(questionText, choicesBox, choicesGroup, trueBtn, falseBtn, submitBtn, timeBar, timeLabel);
-        });
+
 
         submitBtn.setOnAction(e -> {
             Question q = GameManager.getInstance().getCurrentQuestion();
@@ -184,6 +177,9 @@ public class GameView {
         a.setContentText(content);
         a.showAndWait();
     }
+
+    public TextField nameField() { return nameField; }
+    public Label questionText()  { return questionText; }
 
     public Scene getScene() { return scene; }
 }
