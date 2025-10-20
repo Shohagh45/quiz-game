@@ -1,5 +1,6 @@
 package com.example.quiz;
 
+import com.example.quiz.controller.GameController;
 import com.example.quiz.controller.MenuController;
 import com.example.quiz.view.MenuView;
 import com.example.quiz.view.GameView;
@@ -21,7 +22,8 @@ public class Router {
     }
 
     public void showGame() {
-        GameView view = new GameView(this);
+        GameView view = new GameView();        // no Router in the view anymore
+        new GameController(this, view);        // controller owns logic + navigation
         stage.setScene(view.getScene());
         stage.show();
     }
