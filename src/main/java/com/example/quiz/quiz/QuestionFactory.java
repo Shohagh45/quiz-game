@@ -3,25 +3,43 @@ package com.example.quiz.quiz;
 import com.example.quiz.model.Element;
 import com.example.quiz.model.Page;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class QuestionFactory {
+
     public static Question from(Page page) {
-        if (page.getElements()==null || page.getElements().isEmpty())
+        if (page.getElements() == null || page.getElements().isEmpty()) {
             throw new IllegalArgumentException("Page has no elements");
-        Element e = page.getElements().get(0); // assume one per page
+        }
+
+        Element e = page.getElements().get(0);
         String type = e.getType();
-        String id = e.getName();
+        String id   = e.getName();
         String text = e.getTitle();
-        int time = page.getTimeLimit();
+        int time    = page.getTimeLimit();
 
         if ("radiogroup".equalsIgnoreCase(type)) {
-            return new ChoiceQuestion(id, text, time,
-                    Arrays.asList(e.getChoices()), e.getCorrectAnswer());
+
+            List<String> choices = e.getChoices() != null ? e.getChoices() : List.of();
+
+
+            String correct = e.getCorrectAnswerString();
+            if (correct == null && e.getCorrectAnswerBoolean() != null) {
+
+                correct = String.valueOf(e.getCorrectAnswerBoolean());
+            }
+            return new ChoiceQuestion(id, text, time, choices, correct);
+
         } else if ("boolean".equalsIgnoreCase(type)) {
-            boolean correct = e.getCorrectAnswerBool() != null ? e.getCorrectAnswerBool() :
-                    "true".equalsIgnoreCase(String.valueOf(e.getCorrectAnswer()));
+
+            Boolean correct = e.getCorrectAnswerBoolean();
+            if (correct == null) {
+
+                String s = e.getCorrectAnswerString();
+                correct = s != null ? Boolean.parseBoolean(s) : Boolean.FALSE;
+            }
             return new BooleanQuestion(id, text, time, correct);
+
         } else {
             throw new UnsupportedOperationException("Unsupported question type: " + type);
         }

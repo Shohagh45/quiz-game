@@ -28,22 +28,33 @@ public class MenuController {
     }
 
     private void onLoadQuiz() {
+        var owner = (view.getScene() != null) ? view.getScene().getWindow() : null;
+
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select Quiz JSON");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
-        File f = chooser.showOpenDialog(view.getScene().getWindow());
+
+        File f = chooser.showOpenDialog(owner);
         if (f == null) return;
+
         try {
-            Quiz quiz = QuizIO.loadQuiz(f);
-            gm.loadQuiz(quiz);
+            Quiz quiz = QuizIO.loadQuiz(f);          // throws if bad JSON
+            gm.loadQuiz(quiz);                       // reset score/index inside
+
+            // UI feedback
             view.getDescArea().setText(quiz.getDescription() == null ? "" : quiz.getDescription());
-            view.getStatusLabel().setText("Loaded: " + quiz.getTitle() + " (" + gm.getTotalQuestions() + " questions)");
+            String title = quiz.getTitle() == null ? f.getName() : quiz.getTitle();
+            view.getStatusLabel().setText("Loaded: " + title + " (" + gm.getTotalQuestions() + " questions)");
             view.getStartBtn().setDisable(false);
         } catch (Exception ex) {
+            ex.printStackTrace(); // helpful in console
             Alert a = new Alert(Alert.AlertType.ERROR);
-            a.setHeaderText("Failed to load quiz");
+            a.setTitle("Load error");
+            a.setHeaderText("Failed to load quiz file");
             a.setContentText(ex.getMessage());
             a.showAndWait();
+            view.getStartBtn().setDisable(true);
+            view.getStatusLabel().setText("Load failed.");
         }
     }
 }

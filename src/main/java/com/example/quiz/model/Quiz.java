@@ -1,12 +1,15 @@
 package com.example.quiz.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Quiz {
     private String quizId = "quiz001";
     private String title;
     private String description;
     private List<Page> pages;
+
 
     public String getQuizId() { return quizId; }
     public void setQuizId(String id) { this.quizId = id; }
