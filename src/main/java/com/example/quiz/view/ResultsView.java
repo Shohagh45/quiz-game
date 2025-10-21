@@ -1,75 +1,59 @@
 package com.example.quiz.view;
 
-import com.example.quiz.Router;
-import com.example.quiz.io.QuizIO;
-import com.example.quiz.state.GameManager;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
-
-import java.io.IOException;
+import javafx.scene.layout.HBox;
 
 public class ResultsView {
-    private final Router router;
+
+    public static class ResultRow {
+        private final String playerName;
+        private final int totalQuestions;
+        private final int correctQuestions;
+        private final String date;
+
+        public ResultRow(String playerName, int totalQuestions, int correctQuestions, String date) {
+            this.playerName = playerName; this.totalQuestions = totalQuestions;
+            this.correctQuestions = correctQuestions; this.date = date;
+        }
+        public String getPlayerName() { return playerName; }
+        public int getTotalQuestions() { return totalQuestions; }
+        public int getCorrectQuestions() { return correctQuestions; }
+        public String getDate() { return date; }
+    }
+
+    private final TableView<ResultRow> table = new TableView<>();
+    private final Button menuBtn = new Button("Back to Menu");
     private final Scene scene;
 
-    public ResultsView(Router router) {
-        this.router = router;
-
+    public ResultsView() {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(16));
 
-        Label header = new Label("Results");
-        header.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        TableColumn<ResultRow, String> c1 = new TableColumn<>("Player");
+        c1.setCellValueFactory(new PropertyValueFactory<>("playerName"));
+        TableColumn<ResultRow, Integer> c2 = new TableColumn<>("Total");
+        c2.setCellValueFactory(new PropertyValueFactory<>("totalQuestions"));
+        TableColumn<ResultRow, Integer> c3 = new TableColumn<>("Correct");
+        c3.setCellValueFactory(new PropertyValueFactory<>("correctQuestions"));
+        TableColumn<ResultRow, String> c4 = new TableColumn<>("Date");
+        c4.setCellValueFactory(new PropertyValueFactory<>("date"));
 
-        GameManager gm = GameManager.getInstance();
-        int total = gm.getTotalQuestions();
-        int correct = gm.scoreProperty().get();
+        table.getColumns().addAll(c1, c2, c3, c4);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
-        Label summary = new Label(gm.playerNameProperty().get() + ", you scored " + correct + " / " + total);
+        HBox bottom = new HBox(10, menuBtn);
+        bottom.setPadding(new Insets(10));
 
-        Button saveBtn = new Button("Save Highscore");
-        Button menuBtn = new Button("Back to Menu");
-
-        VBox center = new VBox(10, summary, saveBtn, menuBtn);
-        center.setPadding(new Insets(10));
-        root.setTop(header);
-        root.setCenter(center);
-
-        saveBtn.setOnAction(e -> {
-            try {
-                QuizIO.saveResult(gm.getQuiz(),
-                        gm.playerNameProperty().get(),
-                        total, correct);
-                alert("Saved", "Result written to results/" + gm.getQuiz().getQuizId() + "-results.json");
-            } catch (IOException ex) {
-                error("Save failed", ex.getMessage());
-            }
-        });
-
-        menuBtn.setOnAction(e -> router.showMenu());
-
-        this.scene = new Scene(root, 760, 520);
+        root.setCenter(table);
+        root.setBottom(bottom);
+        scene = new Scene(root, 860, 560);
     }
 
-    private void alert(String header, String content) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Info");
-        a.setHeaderText(header);
-        a.setContentText(content);
-        a.showAndWait();
-    }
-    private void error(String header, String content) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setTitle("Error");
-        a.setHeaderText(header);
-        a.setContentText(content);
-        a.showAndWait();
-    }
-
+    public TableView<ResultRow> table() { return table; }
+    public Button menuBtn() { return menuBtn; }
     public Scene getScene() { return scene; }
 }

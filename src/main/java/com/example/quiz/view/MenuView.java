@@ -47,5 +47,5 @@ public class MenuView {
     public TextArea getDescArea()    { return descArea; }
     public Label getStatusLabel()    { return statusLabel; }
     public Scene getScene()          { return scene; }
-    public BorderPane getRoot()      { return root; }
+    //public BorderPane getRoot()      { return root; }
 }
