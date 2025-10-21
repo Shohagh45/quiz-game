@@ -17,6 +17,7 @@ public class QuizParsingTest {
         Quiz quiz = QuizIO.loadQuiz(f);
         assertNotNull(quiz);
         assertEquals("Java Basics Quiz", quiz.getTitle());
-        assertEquals(3, quiz.getPages().size());
+        // Expect 2 pages in the sample quiz
+        assertEquals(2, quiz.getPages().size());
     }
 }

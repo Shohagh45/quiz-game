@@ -4,7 +4,10 @@ import com.example.quiz.model.Page;
 import com.example.quiz.model.Quiz;
 import com.example.quiz.quiz.Question;
 import com.example.quiz.quiz.QuestionFactory;
-import javafx.beans.property.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +15,10 @@ import java.util.List;
 public class GameManager {
     private static GameManager INSTANCE;
 
-    private final StringProperty playerName = new SimpleStringProperty("");
-    private final IntegerProperty score = new SimpleIntegerProperty(0);
-    private final IntegerProperty currentIndex = new SimpleIntegerProperty(0);
-    private final List<Question> questions = new ArrayList<>();
+    private final StringProperty playerName   = new SimpleStringProperty("");
+    private final IntegerProperty score       = new SimpleIntegerProperty(0);      // #correct
+    private final IntegerProperty currentIndex= new SimpleIntegerProperty(0);      // 0-based
+    private final List<Question> questions    = new ArrayList<>();
     private Quiz quiz;
 
     private GameManager() {}
@@ -36,7 +39,7 @@ public class GameManager {
     public void loadQuiz(Quiz quiz) {
         reset();
         this.quiz = quiz;
-        if (quiz.getPages()!=null) {
+        if (quiz != null && quiz.getPages() != null) {
             for (Page p : quiz.getPages()) {
                 questions.add(QuestionFactory.from(p));
             }
@@ -52,19 +55,25 @@ public class GameManager {
         return questions.get(currentIndex.get());
     }
 
+
     public void answerCurrent(Object answer) {
         Question q = getCurrentQuestion();
         if (q != null && q.isCorrect(answer)) {
             score.set(score.get() + 1);
         }
+
         currentIndex.set(currentIndex.get() + 1);
     }
 
-    public int getTotalQuestions() { return questions.size(); }
-    public Quiz getQuiz() { return quiz; }
 
-    // Properties for Observer pattern
-    public StringProperty playerNameProperty() { return playerName; }
-    public IntegerProperty scoreProperty() { return score; }
-    public IntegerProperty currentIndexProperty() { return currentIndex; }
+    public int  getTotalQuestions() { return questions.size(); }
+    public int  getScore()          { return score.get(); }
+    public int  getCorrectCount()   { return score.get(); }
+    public int  getCurrentIndex()   { return currentIndex.get(); }
+    public Quiz getQuiz()           { return quiz; }
+
+
+    public StringProperty  playerNameProperty()  { return playerName; }
+    public IntegerProperty scoreProperty()       { return score; }
+    public IntegerProperty currentIndexProperty(){ return currentIndex; }
 }
