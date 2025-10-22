@@ -20,6 +20,7 @@ public class GameController {
 
     private Timeline timer;
     private int totalForTimer = 0;
+    private boolean inputLocked = false;
 
     public GameController(Router router, GameView view) {
         this.router = router;
@@ -29,32 +30,60 @@ public class GameController {
     }
 
     private void hookBindings() {
-        // Observer: live score + progress via property bindings
+
         view.scoreLabel().textProperty().bind(gm.scoreProperty().asString("Score: %d"));
         view.progressLabel().textProperty().bind(
                 Bindings.createStringBinding(
                         () -> "Question " + (gm.currentIndexProperty().get() + 1) + " of " + gm.getTotalQuestions(),
-                        gm.currentIndexProperty())
+                        gm.currentIndexProperty()
+                )
         );
     }
 
     private void hookEvents() {
+
         view.nameField().setOnAction(e -> begin());
 
+
         view.submitBtn().setOnAction(e -> {
-            Question q = gm.getCurrentQuestion();
-            Object answer = null;
-            if (q instanceof ChoiceQuestion) {
-                Toggle t = view.choicesGroup().getSelectedToggle();
-                if (t != null) answer = ((RadioButton) t).getText();
+            if (inputLocked) return;
+            lockInput(true);
+            try {
+                Question q = gm.getCurrentQuestion();
+                Object answer = null;
+                if (q instanceof ChoiceQuestion) {
+                    Toggle t = view.choicesGroup().getSelectedToggle();
+                    if (t != null) answer = ((RadioButton) t).getText();
+                }
+                gm.answerCurrent(answer);
+                nextQuestion();
+            } finally {
+                lockInput(false);
             }
-            gm.answerCurrent(answer);
-            nextQuestion();
         });
 
-        view.trueBtn().setOnAction(e -> { gm.answerCurrent(true);  nextQuestion(); });
-        view.falseBtn().setOnAction(e -> { gm.answerCurrent(false); nextQuestion(); });
-        view.skipBtn().setOnAction(e ->  { gm.answerCurrent(null);  nextQuestion(); });
+
+        view.trueBtn().setOnAction(e -> {
+            if (inputLocked) return;
+            lockInput(true);
+            try { gm.answerCurrent(true); nextQuestion(); }
+            finally { lockInput(false); }
+        });
+        view.falseBtn().setOnAction(e -> {
+            if (inputLocked) return;
+            lockInput(true);
+            try { gm.answerCurrent(false); nextQuestion(); }
+            finally { lockInput(false); }
+        });
+
+
+        view.skipBtn().setOnAction(e -> {
+            if (inputLocked) return;
+            lockInput(true);
+            try { gm.answerCurrent(null); nextQuestion(); }
+            finally { lockInput(false); }
+        });
+
 
         view.finishBtn().setOnAction(e -> router.showResults());
     }
@@ -66,6 +95,7 @@ public class GameController {
             return;
         }
         gm.playerNameProperty().set(name);
+        view.nameField().setDisable(true);
         nextQuestion();
     }
 
@@ -79,24 +109,29 @@ public class GameController {
 
         Question q = gm.getCurrentQuestion();
 
-        // Reset UI
+
         view.questionText().setText(q.getText());
         view.choicesBox().getChildren().clear();
         view.choicesGroup().getToggles().clear();
 
         view.trueBtn().setVisible(false);
         view.falseBtn().setVisible(false);
-        view.submitBtn().setDisable(false);
         view.submitBtn().setVisible(true);
         view.finishBtn().setVisible(false);
 
         if (q instanceof ChoiceQuestion cq) {
+
             for (String c : cq.getChoices()) {
                 RadioButton rb = new RadioButton(c);
                 rb.setToggleGroup(view.choicesGroup());
                 view.choicesBox().getChildren().add(rb);
             }
+
+            view.submitBtn().setDisable(true);
+            view.choicesGroup().selectedToggleProperty().addListener((obs, oldT, newT) ->
+                    view.submitBtn().setDisable(newT == null));
         } else {
+
             view.submitBtn().setVisible(false);
             view.trueBtn().setVisible(true);
             view.falseBtn().setVisible(true);
@@ -106,6 +141,7 @@ public class GameController {
         int idx = gm.currentIndexProperty().get();
         boolean last = (idx == gm.getTotalQuestions() - 1);
         view.finishBtn().setVisible(last);
+
 
         startTimer(q.getTimeLimit());
     }
@@ -122,12 +158,14 @@ public class GameController {
         view.timeBar().setProgress(1.0);
 
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            int remaining = Integer.parseInt(view.timeLabel().getText().replace("s","")) - 1;
+
+            String txt = view.timeLabel().getText();
+            int remaining = (txt.endsWith("s") ? Integer.parseInt(txt.substring(0, txt.length() - 1)) : 0) - 1;
             view.timeLabel().setText(remaining + "s");
             view.timeBar().setProgress(Math.max(0, (double) remaining / totalForTimer));
             if (remaining <= 0) {
                 stopTimer();
-                gm.answerCurrent(null); // timeout acts as incorrect/blank
+                gm.answerCurrent(null);
                 nextQuestion();
             }
         }));
@@ -135,5 +173,19 @@ public class GameController {
         timer.playFromStart();
     }
 
-    private void stopTimer() { if (timer != null) timer.stop(); }
+    private void stopTimer() {
+        if (timer != null) timer.stop();
+    }
+
+
+    private void lockInput(boolean lock) {
+        inputLocked = lock;
+        boolean submitShouldBeDisabled =
+                lock || (view.submitBtn().isVisible() && view.choicesGroup().getSelectedToggle() == null);
+        view.submitBtn().setDisable(submitShouldBeDisabled);
+        view.trueBtn().setDisable(lock);
+        view.falseBtn().setDisable(lock);
+        view.skipBtn().setDisable(lock);
+        view.nameField().setDisable(lock && gm.currentIndexProperty().get() == 0);
+    }
 }
